@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "/subscriptions/1595bd84-953e-4d03-917b-cc2f4b0227d7/resourceGroups/ktmp_group/providers/Microsoft.Web/sites/ktmp",
+  "appService.deploySubpath": "."
+}
