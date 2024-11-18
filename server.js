@@ -6,6 +6,10 @@ const port = 3000;
 
 app.use(cors());
 
+app.get("/hello", (req, res) => {
+  return res.json("Hello WORLD!!!");
+});
+
 app.get("/short/:id", async (req, res) => {
   try {
     const id = req.params.id;
