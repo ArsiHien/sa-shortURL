@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Short URL Service</title>
+  </head>
+  <body>
+    <h1>Short URL Service</h1>
+
+    <!-- Form to Create a Short URL -->
+    <h2>Create a Short URL</h2>
+    <form id="createForm">
+      <label for="longUrl">Enter URL:</label>
+      <input
+        type="url"
+        id="longUrl"
+        name="longUrl"
+        required
+        placeholder="https://example.com"
+      />
+      <button type="submit">Generate Short URL</button>
+    </form>
+    <p id="createResult"></p>
+
+    <!-- Form to Retrieve Original URL -->
+    <h2>Retrieve Original URL</h2>
+    <form id="retrieveForm">
+      <label for="shortId">Enter Short ID:</label>
+      <input
+        type="text"
+        id="shortId"
+        name="shortId"
+        required
+        placeholder="Short ID"
+      />
+      <button type="submit">Find Original URL</button>
+    </form>
+    <p id="retrieveResult"></p>
+
+    <script>
+      // Define the base URL for your backend APIs
+      const API_BASE_URL = "https://saktpm.azurewebsites.net";
+
+      // Handle the Create Short URL form submission
+      document
+        .getElementById("createForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const longUrl = document.getElementById("longUrl").value;
+
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/create?url=${encodeURIComponent(longUrl)}`,
+              {
+                method: "POST",
+              }
+            );
+
+            const data = await response.text(); // Server returns the short ID as plain text
+            document.getElementById(
+              "createResult"
+            ).textContent = `Short URL ID: ${data}`;
+          } catch (error) {
+            document.getElementById(
+              "createResult"
+            ).textContent = `Error: ${error.message}`;
+          }
+        });
+
+      // Handle the Retrieve Original URL form submission
+      document
+        .getElementById("retrieveForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const shortId = document.getElementById("shortId").value;
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/short/${shortId}`, {
+              method: "GET",
+            });
+
+            const data = await response.text(); // Server returns the original URL or a 404 HTML response
+            if (response.ok) {
+              document.getElementById(
+                "retrieveResult"
+              ).textContent = `Original URL: ${data}`;
+            } else {
+              document.getElementById(
+                "retrieveResult"
+              ).textContent = `Error: ${data}`;
+            }
+          } catch (error) {
+            document.getElementById(
+              "retrieveResult"
+            ).textContent = `Error: ${error.message}`;
+          }
+        });
+    </script>
+  </body>
+</html>
