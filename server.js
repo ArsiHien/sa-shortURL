@@ -12,6 +12,10 @@ app.get("/hello", (req, res) => {
   return res.json("Hello WORLD!!!");
 });
 
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
+});
+
 app.get("/short/:id", async (req, res) => {
   try {
     const id = req.params.id;
