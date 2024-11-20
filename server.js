@@ -15,6 +15,10 @@ app.get("/hello", (req, res) => {
   return res.json("Hello WORLD!!!");
 });
 
+app.get("/", (req, res) => {
+  return res.json("Hello WORLD!!! This is home!");
+});
+
 app.get("/short/:id", async (req, res) => {
   try {
     const id = req.params.id;
