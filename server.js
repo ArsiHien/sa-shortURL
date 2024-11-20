@@ -3,20 +3,14 @@ const lib = require("./utils");
 require("dotenv").config();
 const app = express();
 const cors = require("cors");
-const path = require("path");
 const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public"))); // Serve static files from 'public'
 
 // Routes
 app.get("/hello", (req, res) => {
   return res.json("Hello WORLD!!!");
-});
-
-app.get("/", (req, res) => {
-  return res.json("Hello WORLD!!! This is home!");
 });
 
 app.get("/short/:id", async (req, res) => {
@@ -41,11 +35,6 @@ app.post("/create", async (req, res) => {
   } catch (err) {
     res.status(500).send(err);
   }
-});
-
-// Fallback to index.html for non-API routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Start server
