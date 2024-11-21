@@ -1,43 +1,13 @@
-const express = require("express");
-const lib = require("./utils");
-require("dotenv").config();
+const express = require('express');
+const gatewayRoutes = require('./gateway/gatewayRoutes');
+require('dotenv').config();
+
 const app = express();
-const cors = require("cors");
-const port = process.env.PORT || 3000;
+const port = process.env.APP_PORT || 3000;
 
-// Middleware
-app.use(cors());
+app.use(express.json());
+app.use('/', gatewayRoutes);
 
-// Routes
-app.get("/hello", (req, res) => {
-  return res.json("Hello WORLD!!!");
-});
-
-app.get("/short/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const url = await lib.findOrigin(id);
-    if (url == null) {
-      res.status(404).send("<h1>404 - URL Not Found</h1>");
-    } else {
-      res.send(url);
-    }
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
-
-app.post("/create", async (req, res) => {
-  try {
-    const url = req.query.url;
-    const newID = await lib.shortUrl(url);
-    res.send(newID);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
-
-// Start server
 app.listen(port, () => {
-  console.log(`App listening on port ${port}`);
+  console.log(`API Gateway listening on port ${port}`);
 });

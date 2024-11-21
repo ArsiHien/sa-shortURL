@@ -1,18 +1,5 @@
-const { MongoClient } = require("mongodb");
 require("dotenv").config();
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-let collection;
-
-async function run() {
-  try {
-    const database = client.db("data");
-    collection = database.collection("urls");
-    console.log("Connected to MongoDB...");
-  } catch (error) {
-    console.error("Connect database error: ", error);
-  }
-}
+const mongoClient = require("./database/initMongo");
 
 function makeID(length) {
   let result = "";
@@ -29,6 +16,8 @@ function makeID(length) {
 
 async function findOrigin(id) {
   try {
+    const database = mongoClient.db("data");
+    const collection = database.collection("urls");
     const res = await collection.findOne({ id });
     return res ? res.url : null;
   } catch (error) {
@@ -57,9 +46,8 @@ async function shortUrl(url) {
   }
 }
 
-run().catch(console.dir);
-
 module.exports = {
+  makeID,
   findOrigin,
   shortUrl,
 };
