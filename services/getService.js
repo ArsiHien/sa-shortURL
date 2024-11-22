@@ -1,25 +1,42 @@
 const express = require("express");
-const lib = require("../utils");
+const redisClient = require("../database/initRedis");
+const lib = require("../utils"); // Utility functions (e.g., `findOrigin`)
 require("dotenv").config();
+
 const app = express();
 const port = process.env.GET_SERVICE_PORT || 3001;
 
 app.get("/short/:id", async (req, res) => {
-  console.log("Here is get");
+  const id = req.params.id;
+  const cacheKey = `id:${id}`;
+
   try {
-    const id = req.params.id;
-    const url = await lib.findOrigin(id);
-    if (url == null) {
-      res.status(404).send("<h1>404 - URL Not Found</h1>");
-    } else {
-      res.send(url);
+    // Check the cache
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      // console.log(`Cache hit for key: ${cacheKey}`);
+      return res.send(cachedData); // Send the cached URL as plain text
     }
-  } catch (err) {
-    res.status(500).send(err);
+
+    // console.log(`Cache miss for key: ${cacheKey}. Fetching from database...`);
+    // Fetch data from the database
+    const url = await lib.findOrigin(id);
+
+    if (!url) {
+      return res.status(404).send("<h1>404 - URL Not Found</h1>");
+    }
+
+    // Cache the data and set expiration (e.g., 1 hour)
+    await redisClient.setEx(cacheKey, 3600, url);
+
+    return res.send(url); // Send the URL as plain text
+  } catch (error) {
+    // console.error("Error handling request:", error);
+    return res.status(500).send("An unexpected error occurred.");
   }
 });
 
-// Start service
+// Start the service
 app.listen(port, () => {
   console.log(`Get service is listening on port ${port}`);
 });

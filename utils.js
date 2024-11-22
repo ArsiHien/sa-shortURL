@@ -28,6 +28,8 @@ async function findOrigin(id) {
 
 async function create(id, url) {
   try {
+    const database = mongoClient.db("data");
+    const collection = database.collection("urls");
     await collection.insertOne({ id, url });
     return id;
   } catch (error) {
