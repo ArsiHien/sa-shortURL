@@ -40,8 +40,8 @@ async function create(id, url) {
 
 async function shortUrl(url) {
   while (true) {
-    let newID = makeID(5);
-    let originUrl = await findOrigin(newID);
+    const newID = makeID(5);
+    const originUrl = await findOrigin(newID);
     if (originUrl == null);
     await create(newID, url);
     return newID;
