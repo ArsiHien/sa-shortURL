@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-
+const CircuitBreaker = require("opossum");
 const router = express.Router();
 const BASE_URL = "http://localhost";
 
@@ -17,7 +17,7 @@ const services = [
 ];
 
 const rateLimit = 60; //req/min
-const interval = 60 * 1000;  //1 min
+const interval = 60 * 1000; //1 min
 const requestCounts = {};
 
 setInterval(() => {
@@ -54,22 +54,42 @@ function rateLimitAndTimeout(req, res, next) {
 
 router.use(rateLimitAndTimeout); // Apply rate limit and timeout once for all routes
 
-services.forEach(({ route, target }) => {
-  const proxyOptions = {
-    target,
-    changeOrigin: true,
-    pathRewrite: {
-      [`^${route}`]: "",
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(`[Proxy] ${req.method} request to: ${req.originalUrl}`);
-    },
-    onProxyRes: (proxyRes, req, res) => {
-      console.log(`[Proxy] Response from target: ${target}`);
-    },
-  };
+const circuitBreakerOptions = {
+  timeout: 5000, //longer than 5s => fails
+  errorThresholdPercentage: 50, //when 50% req fail => open
+  resetTimeout: 10000, //try again after 10s
+};
 
-  router.use(route, createProxyMiddleware(proxyOptions));
+const circuitBreakers = {};
+services.forEach(({ route, target }) => {
+  const breaker = new CircuitBreaker(async (req, res) => {
+    return new Promise((resolve, reject) => {
+      const proxyOptions = {
+        target,
+        changeOrigin: true,
+        pathRewrite: {
+          [`^${route}`]: "", // Remove the route prefix when forwarding the request
+        },
+      };
+      const proxy = createProxyMiddleware(proxyOptions);
+      proxy(req, res, (err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+  }, circuitBreakerOptions);
+  breaker.fallback(() => {
+    console.error(`Circuit breaker for ${target} is open`);
+    return { status: 503, message: "Service Unavailable" };
+  });
+  circuitBreakers[route] = breaker;
+  router.use(route, (req, res) => {
+    breaker.fire(req, res).catch((error) => {
+      res.status(503).json({ message: "Service Unavailable", error });
+    });
+  });
 });
 
 module.exports = router;
