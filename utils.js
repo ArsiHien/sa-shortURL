@@ -1,5 +1,7 @@
 require("dotenv").config();
-const mongoClient = require("./database/initMongo");
+const { PrismaClient } = require("@prisma/client");
+
+const prisma = new PrismaClient();
 
 function makeID(length) {
   let result = "";
@@ -16,10 +18,8 @@ function makeID(length) {
 
 async function findOrigin(id) {
   try {
-    const database = mongoClient.db("data");
-    const collection = database.collection("urls");
-    const res = await collection.findOne({ id });
-    return res ? res.url : null;
+    const url = await prisma.uRL.findUnique({ where: { shortId: id } });
+    return url ? url.originalUrl : null;
   } catch (error) {
     console.error(error);
     throw error;
@@ -28,10 +28,10 @@ async function findOrigin(id) {
 
 async function create(id, url) {
   try {
-    const database = mongoClient.db("data");
-    const collection = database.collection("urls");
-    await collection.insertOne({ id, url });
-    return id;
+    const newUrl = await prisma.uRL.create({
+      data: { shortId: id, originalUrl: url },
+    });
+    return newUrl.shortId;
   } catch (error) {
     console.error("Error creating entry:", error.message);
     throw error;
