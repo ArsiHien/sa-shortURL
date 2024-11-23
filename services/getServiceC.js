@@ -4,7 +4,7 @@ const lib = require("../utils"); // Utility functions (e.g., `findOrigin`)
 require("dotenv").config();
 
 const app = express();
-const port = process.env.GET_SERVICE_PORT || 3001;
+const port = process.env.GET_SERVICE_C_PORT || 6003;
 
 app.get("/short/:id", async (req, res) => {
   const id = req.params.id;
@@ -38,5 +38,5 @@ app.get("/short/:id", async (req, res) => {
 
 // Start the service
 app.listen(port, () => {
-  console.log(`Get service is listening on port ${port}`);
+  console.log(`Get service C is listening on port ${port}`);
 });

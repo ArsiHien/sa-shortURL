@@ -5,7 +5,12 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"node server.js\" \"node ./services/getService.js\" \"node ./services/createService.js\""
+    "start-create": "node ./services/createService.js",
+    "start-get-a": "node ./services/getServiceA.js",
+    "start-get-b": "node ./services/getServiceB.js",
+    "start-get-c": "node ./services/getServiceC.js",
+    "start-server": "node ./server.js",
+    "start": "concurrently \"npm run start-create\" \"npm run start-get-a\" \"npm run start-get-b\" \"npm run start-get-c\" \"npm run start-server\""
   },
   "author": "",
   "license": "ISC",
