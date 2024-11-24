@@ -1,19 +1,17 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
+const crypto = require('crypto');
 
 const prisma = new PrismaClient();
 
-function makeID(length) {
-  let result = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  let counter = 0;
-  while (counter < length) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    counter += 1;
-  }
-  return result;
+function makeID(url) {
+    // Create a hash of the URL
+    const hash = crypto.createHash('sha256')
+        .update(url)
+        .digest('base64')
+        .replace(/[+/=]/g, '') // Remove +, / and = characters
+        .slice(0, 5);          // Take first 5 characters
+    return hash;
 }
 
 async function findOrigin(id) {
