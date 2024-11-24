@@ -1,6 +1,6 @@
 const express = require("express");
 const amqp = require("amqplib/callback_api");
-const { getAsync, setExAsync } = require("../database/initRedis");
+const redisClient = require("../database/initRedis");
 const lib = require("../utils");
 require("dotenv").config();
 
@@ -29,7 +29,7 @@ function consumeQueue() {
           const cacheKey = `id:${id}`;
           try {
             // Check the cache
-            const cachedData = await getAsync(cacheKey);
+            const cachedData = await redisClient.getData(cacheKey);
             if (cachedData) {
               const response = cachedData;
               ch.sendToQueue(replyTo, Buffer.from(JSON.stringify(response)), {
@@ -49,7 +49,7 @@ function consumeQueue() {
             }
 
             // Cache the data and set expiration (e.g., 1 hour)
-            await setExAsync(cacheKey, 3600, url);
+            await redisClient.setData(cacheKey, url, 3600);
             const response = url;
             ch.sendToQueue(replyTo, Buffer.from(JSON.stringify(response)), {
               correlationId,
